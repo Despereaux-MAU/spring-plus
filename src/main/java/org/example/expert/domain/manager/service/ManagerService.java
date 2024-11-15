@@ -1,8 +1,8 @@
 package org.example.expert.domain.manager.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.InvalidRequestException;
+import org.example.expert.common.dto.AuthUser;
+import org.example.expert.common.exception.InvalidRequestException;
 import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
 import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
@@ -52,7 +52,7 @@ public class ManagerService {
 
         return new ManagerSaveResponse(
                 savedManagerUser.getId(),
-                new UserResponse(managerUser.getId(), managerUser.getEmail())
+                new UserResponse(managerUser.getId(), managerUser.getEmail(), managerUser.getNickname())
         );
     }
 
@@ -67,7 +67,7 @@ public class ManagerService {
             User user = manager.getUser();
             dtoList.add(new ManagerResponse(
                     manager.getId(),
-                    new UserResponse(user.getId(), user.getEmail())
+                    new UserResponse(user.getId(), user.getEmail(), user.getNickname())
             ));
         }
         return dtoList;
