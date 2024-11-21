@@ -2,15 +2,16 @@ package org.example.expert.domain.user.controller;
 
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.enums.UserRole;
+import org.example.expert.domain.user.repository.UserRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -20,8 +21,14 @@ class UserControllerTest {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Test
-    void getUsersByNickname() throws SQLException {
+    @DisplayName("유저 생성 테스트")
+    void generateUserByNickname()throws SQLException {
         long startTime = System.currentTimeMillis();
 
         Set<String> nicknames = new HashSet<>();
@@ -70,6 +77,47 @@ class UserControllerTest {
             }
 
             ps.executeBatch();
+        }
+    }
+
+    @Test
+    @DisplayName("유저 조회 테스트1")
+    void getUsersByNickname() {
+        long startTime = System.currentTimeMillis();
+
+        List<User> users = userRepository.findByNickname("4764e350-9917-488b-9376-ffa4f113ce9c");
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("유저 조회 시간: " + duration + "milliseconds");
+
+        users.forEach(user -> System.out.println(user.getNickname()));
+    }
+
+    @Test
+    @DisplayName("유저 조회 테스트2")
+    void getUsersByNicknameWithNoCache() {
+        long startTime = System.currentTimeMillis();
+
+        String sql = "SELECT SQL_NO_CACHE * FROM users WHERE nickname = ?";
+        List<User> users = jdbcTemplate.query(sql, new Object[]{"4764e350-9917-488b-9376-ffa4f113ce9c"}, new UserRowMapper());
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("유저 조회 시간 (SQL_NO_CACHE): " + duration + " milliseconds");
+
+        users.forEach(user -> System.out.println(user.getNickname()));
+    }
+
+    private static class UserRowMapper implements RowMapper<User> {
+        @Override
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new User(
+                    rs.getString("email"),
+                    rs.getString("nickname"),
+                    rs.getString("password"),
+                    UserRole.valueOf(rs.getString("user_role"))
+            );
         }
     }
 }
