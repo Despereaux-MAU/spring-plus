@@ -5,8 +5,10 @@ import org.example.expert.common.client.WeatherClient;
 import org.example.expert.common.dto.AuthUser;
 import org.example.expert.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
@@ -16,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -48,20 +52,22 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> findAllByWeatherAndDateRange(int page,
+                                                           int size,
+                                                           String weather,
+                                                           LocalDateTime startDateTime,
+                                                           LocalDateTime endDateTime) {
         Pageable pageable = PageRequest.of(page - 1, size);
-
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
-
-        return todos.map(todo -> new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(), todo.getUser().getNickname()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        ));
+        return todoRepository.findAllByWeatherAndDateRange(weather, startDateTime, endDateTime, pageable)
+                .map(todo -> new TodoResponse(
+                        todo.getId(),
+                        todo.getTitle(),
+                        todo.getContents(),
+                        todo.getWeather(),
+                        new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(), todo.getUser().getNickname()),
+                        todo.getCreatedAt(),
+                        todo.getModifiedAt()
+                ));
     }
 
     public TodoResponse getTodo(long todoId) {
@@ -79,5 +85,10 @@ public class TodoService {
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );
+    }
+
+    public Page<TodoSearchResponse> searchTodos(TodoSearchRequest request) {
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
+        return todoRepository.searchTodos(request, pageRequest);
     }
 }
