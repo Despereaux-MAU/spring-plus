@@ -26,6 +26,10 @@
 6. **성능 최적화**
    - 100만 건의 사용자 데이터를 벌크로 생성하는 작업을 JDBC를 통해 성공적으로 구현했습니다.
    - 사용자 검색 시 `nickname`을 기준으로 조회하는 경우 성능을 개선하기 위해 `nocache`를 이용했습니다.
+   - 1) 적용 전<img width="1920" alt="1차 그냥 조회 했을 때" src="https://github.com/user-attachments/assets/dc0a932f-e1c9-4657-be82-7306db2fa71c">
+
+     2) 적용 후<img width="1920" alt="2차 nocache를 적용했을 때" src="https://github.com/user-attachments/assets/af0825e6-7260-4e20-bf90-59ddc394374d">
+
 
 7. **트랜잭션 관리**
    - `saveTodo` 메서드는 `@Transaction`으로 관리하여 필요한 경우만 트랜잭션을 활성화하도록 하였습니다.
